@@ -1,0 +1,27 @@
+broker:
+  port: @broker.port@
+  address: 192.168.10.56
+  serialize: jackson
+  error-handler: strict
+  appender:
+    type: async
+#    type: sync
+#    type: no
+    log:
+      dir: /tmp/redis-redis/
+      clean-sec: 3600
+      segment-bytes: 134217728 # 128 * 1024 * 1024
+      persist-index-ms: 1000
+  source:
+#    nodes: 192.168.100.101:6379,192.168.100.101:6479,192.168.100.101:6579
+    host-and-port: 192.168.100.101:6179
+  target:
+#    nodes:
+    host-and-port: 192.168.100.101:6279
+  zookeeper:
+    root: /redis-broker
+    address: 192.168.100.101:2181
+
+#mode: onlyForward
+#mode: onlyRepl
+#mode: onlySync
