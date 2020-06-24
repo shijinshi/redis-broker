@@ -285,7 +285,7 @@ public class RedisCodec {
     }
 
     static class Temp {
-        private final ByteArrayOutputStream byteArray = new ByteArrayOutputStream(128);
+        private final ByteArrayOutputStream byteArray = new ByteArrayOutputStream(1024);
         private int integer = -1, len = -1;
         Temp reset() {
             byteArray.reset();

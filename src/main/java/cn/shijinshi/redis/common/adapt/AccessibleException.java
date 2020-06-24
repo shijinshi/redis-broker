@@ -17,7 +17,7 @@ package cn.shijinshi.redis.common.adapt;
  */
 public class AccessibleException extends RuntimeException {
 
-    private boolean disconnected;
+    private final boolean disconnected;
 
     public AccessibleException(Throwable cause, boolean disconnected) {
         super(cause);

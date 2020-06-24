@@ -32,15 +32,15 @@ public class SupportHandler implements Handler {
 
     @Override
     public void handle(RedisRequest request, Support support, CompletableFuture<byte[]> future) {
-        if (support == null) {
-            support = commandSupports.get(request.getCommand());
-        }
-        if (support == null) {
+
+        if (support == null && (support = commandSupports.get(request.getCommand())) == null) {
             String reply = String.format(template, request.getCommand().toString());
             future.complete(reply.getBytes());
+
         } else if (support.isBackup() && !broker.isMaster()) {
             String reply = "-ERR READONLY You can't write against a read only slave.\r\n";
             future.complete(reply.getBytes());
+
         } else if (support.getPreparedAction() == null || !support.getPreparedAction().apply(request, future)) {
             this.next.handle(request, support, future);
         }

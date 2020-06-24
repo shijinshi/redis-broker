@@ -21,7 +21,7 @@ public class SimpleThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(Runnable r) {
         Thread t = new Thread(r);
-        if (t.isDaemon() != daemon) {
+        if (t.isDaemon() ^ daemon) {
             t.setDaemon(daemon);
         }
         t.setName(name + "-" + threadNumber.incrementAndGet());

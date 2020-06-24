@@ -11,7 +11,7 @@ public final class HostAndPort implements Serializable {
     private final String host;
     private final int port;
 
-    private String format;
+    private transient String format;
 
     public HostAndPort() {
         this(null, 0);

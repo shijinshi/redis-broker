@@ -29,19 +29,18 @@ public class ConnectionHandler implements Handler {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionHandler.class);
 
     private static final Unsafe UNSAFE;
-    private static final long FUTURE_RESULT;
+    private static final long RESULT_OFFSET;
 
     static {
         try {
-            Field field = CompletableFuture.class.getDeclaredField("UNSAFE");
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
             field.setAccessible(true);
-            UNSAFE = (Unsafe) field.get(CompletableFuture.class);
-            FUTURE_RESULT = UNSAFE.objectFieldOffset(CompletableFuture.class.getDeclaredField("result"));
+            UNSAFE = (Unsafe) field.get(null);
+            RESULT_OFFSET = UNSAFE.objectFieldOffset(CompletableFuture.class.getDeclaredField("result"));
         } catch (Throwable t) {
             throw new Error(t);
         }
     }
-
 
     private final RedisConnector redisConnector;
     private final Broker broker;
@@ -57,7 +56,8 @@ public class ConnectionHandler implements Handler {
             if (bytes[0] == '-') {
                 byte[] newBytes = convert(bytes);
                 if (newBytes != null) {
-                    UNSAFE.compareAndSwapObject(future, FUTURE_RESULT, bytes, newBytes);
+                    UNSAFE.putObjectVolatile(future, RESULT_OFFSET, newBytes);
+//                    UNSAFE.compareAndSwapObject(future, FUTURE_RESULT, bytes, newBytes);
                 }
             }
         });

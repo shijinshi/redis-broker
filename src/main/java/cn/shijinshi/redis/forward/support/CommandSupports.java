@@ -15,7 +15,9 @@ import java.util.Map;
 @Lazy
 public class CommandSupports {
 
-    private final Map<UnsafeByteString, Support> supports = new HashMap<>();
+    //增大HashMap的容量，降低负载因子，从而降低碰撞率
+    private final Map<UnsafeByteString, Support> supports
+            = new HashMap<>(256, 0.5f);
 
     private final Map<String, Action> actionMap;
 

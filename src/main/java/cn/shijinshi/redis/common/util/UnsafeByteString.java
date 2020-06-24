@@ -1,6 +1,7 @@
 package cn.shijinshi.redis.common.util;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 /**
@@ -19,11 +20,11 @@ public final class UnsafeByteString implements Serializable {
     private final int offset;
     private final int len;
 
-    private int hash = 0;
-    private String string;
+    private transient int hash = 0;
+    private transient String string;
 
     public UnsafeByteString(String string) {
-        this(string.getBytes());
+        this(string.getBytes(StandardCharsets.UTF_8));
     }
 
     public UnsafeByteString(byte[] value) {

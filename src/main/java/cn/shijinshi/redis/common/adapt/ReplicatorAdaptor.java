@@ -24,14 +24,14 @@ public class ReplicatorAdaptor implements Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(ReplicatorAdaptor.class);
 
-    private static final Map<Class, Method> methodMap;
+    private static final Map<Class<?>, Method> methodMap;
 
     static {
-        Map<Class, Method> map = new HashMap<>();
+        Map<Class<?>, Method> map = new HashMap<>(128, 0.5f);
         Method[] methods = ReplicatorHandler.class.getDeclaredMethods();
         for (Method method : methods) {
             if (method.getParameterTypes().length == 1) {
-                Class c = method.getParameterTypes()[0];
+                Class<?> c = method.getParameterTypes()[0];
                 if (Event.class.isAssignableFrom(c) && Future.class.isAssignableFrom(method.getReturnType())) {
                     map.put(c, method);
                 }
