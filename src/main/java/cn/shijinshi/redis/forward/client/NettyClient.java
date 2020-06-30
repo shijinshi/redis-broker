@@ -1,5 +1,6 @@
 package cn.shijinshi.redis.forward.client;
 
+import cn.shijinshi.redis.common.Constants;
 import cn.shijinshi.redis.common.Shutdown;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -27,10 +28,10 @@ public class NettyClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
-    private static final NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+    private static final NioEventLoopGroup eventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS);
 
     static {
-        Shutdown.addRunnable(eventLoopGroup::shutdownGracefully);
+        Shutdown.addRunner(eventLoopGroup::shutdownGracefully, Integer.MAX_VALUE - 10);
     }
 
     private static final long DELAY_UPPER_BOUND = 1000;

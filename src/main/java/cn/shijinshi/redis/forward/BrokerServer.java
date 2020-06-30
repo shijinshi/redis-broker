@@ -4,17 +4,20 @@ import cn.shijinshi.redis.common.prop.BrokerProperties;
 import cn.shijinshi.redis.forward.server.NettyServer;
 import cn.shijinshi.redis.forward.server.RequestDecoder;
 import cn.shijinshi.redis.forward.server.RequestDispatcher;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelId;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
  * @author Gui Jiahai
  */
-public class BrokerServer implements Supplier<List<ChannelHandler>> {
+public class BrokerServer {
 
     private final BrokerProperties properties;
     private final Handler handler;
@@ -30,9 +33,8 @@ public class BrokerServer implements Supplier<List<ChannelHandler>> {
     public void start() {
         try {
             this.requestDispatcher = new RequestDispatcher(handler);
-            this.nettyServer = new NettyServer(this.properties.getPort(), this);
+            this.nettyServer = new NettyServer(this.properties.getPort(), this::handlers);
             this.nettyServer.open();
-            this.requestDispatcher.start();
         } catch (Throwable t) {
             stop();
             throw t;
@@ -43,13 +45,18 @@ public class BrokerServer implements Supplier<List<ChannelHandler>> {
         if (this.nettyServer != null) {
             this.nettyServer.close();
         }
+
         if (this.requestDispatcher != null) {
+            Map<ChannelId, Channel> channels = this.requestDispatcher.getChannels();
+            for (Channel channel : channels.values()) {
+                channel.close();
+            }
+
             this.requestDispatcher.close();
         }
     }
 
-    @Override
-    public List<ChannelHandler> get() {
+    public List<ChannelHandler> handlers() {
         return Arrays.asList(new RequestDecoder(), requestDispatcher);
     }
 }

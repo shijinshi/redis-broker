@@ -7,25 +7,24 @@ package cn.shijinshi.redis.common;
  */
 public interface Constants {
 
-    long PING_INTERVAL_MS = 3000;
+    long PING_INTERVAL_MS       = 3000;
 
-    long DEFAULT_DELAY_EXIT_MS = 60_000;
+    long DEFAULT_DELAY_EXIT_MS  = 60_000;
 
-    byte[] OK_REPLY = "+OK\r\n".getBytes();
+    byte[] OK_REPLY             = "+OK\r\n".getBytes();
 
-    byte[] CONNECTION_LOST = "-ERR connection lost\r\n".getBytes();
+    byte[] CONNECTION_LOST      = "-ERR connection lost\r\n".getBytes();
 
-    byte[] CRLF_BYTE = new byte[]{'\r', '\n'};
+    byte[] CRLF_BYTE            = new byte[]{'\r', '\n'};
 
-    char[] CRLF_CHAR = new char[]{'\r', '\n'};
+    char[] CRLF_CHAR            = new char[]{'\r', '\n'};
 
-    String CRLF_STR = "\r\n";
+    String CRLF_STR             = "\r\n";
 
-    String PATH_SEPARATOR = "/";
+    String PATH_SEPARATOR       = "/";
 
-    String REPLICATION_HOLD = "active";
+    String REPLICATION_HOLD     = "active";
 
-    String SYNC_MODE = "sync";
-    String REPL_MODE = "repl";
+    int DEFAULT_IO_THREADS      = Math.min(Runtime.getRuntime().availableProcessors() + 1, 32);
 
 }

@@ -71,7 +71,7 @@ public class IndexLogger implements Closeable {
         IndexEntry latestIndex = this.indexPersistence == null ? null : this.indexPersistence.latestIndex();
         this.logPersistence = new LogPersistence(dir, properties, latestIndex, access);
 
-        Shutdown.addRunnable(this::close);
+        Shutdown.addRunner(this::close, Integer.MAX_VALUE);
     }
 
     public void ack(long ackedBytes) {

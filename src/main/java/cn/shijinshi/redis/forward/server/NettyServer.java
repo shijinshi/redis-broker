@@ -1,5 +1,6 @@
 package cn.shijinshi.redis.forward.server;
 
+import cn.shijinshi.redis.common.Constants;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
@@ -33,7 +34,7 @@ public class NettyServer {
         this.bootstrap = new ServerBootstrap();
 
         bossGroup = new NioEventLoopGroup(1);
-        workerGroup = new NioEventLoopGroup();
+        workerGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS);
 
         bootstrap.group(bossGroup, workerGroup)
                 .channel(NioServerSocketChannel.class)

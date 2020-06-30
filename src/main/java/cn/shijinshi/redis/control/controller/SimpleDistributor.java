@@ -56,7 +56,7 @@ public class SimpleDistributor implements Distributor {
 
         for (Node newNode : newNodes) {
             if (newNode.getBroker() == null) {
-                while (true) {
+                for (;;) {
                     String leastUsedHost = getLeastUsedHost(counter);
                     if (leastUsedHost == null) {
                         return null;

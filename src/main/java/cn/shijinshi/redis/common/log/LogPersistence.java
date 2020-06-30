@@ -231,7 +231,7 @@ public class LogPersistence implements Closeable {
         @Override
         public int read() throws IOException {
             boolean eof = false;
-            while (true) {
+            for (;;) {
                 boolean exit = false;
                 if (eof || reader == null) {
                     exit = checkAndExit(eof, false, 0);
@@ -254,7 +254,7 @@ public class LogPersistence implements Closeable {
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
             boolean eof = false;
-            while (true) {
+            for (;;) {
                 boolean exit = false;
                 if (eof || reader == null) {
                     exit = checkAndExit(eof, false, 0);
@@ -275,7 +275,7 @@ public class LogPersistence implements Closeable {
         }
 
         private boolean checkAndExit(boolean eof, boolean once, long offset) throws IOException {
-            while (true) {
+            for (;;) {
                 checkClosed(closed);
 
                 while (reader == null) {

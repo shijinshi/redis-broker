@@ -284,7 +284,7 @@ public class ReplicationInvoker extends Thread {
         logger.info("Starting REPL_PING");
 
         Indication indication = new Indication(epoch, Type.REPL_PING);
-        while (true) {
+        for (;;) {
             try {
                 Thread.sleep(pingIntervalMs);
             } catch (InterruptedException e) {

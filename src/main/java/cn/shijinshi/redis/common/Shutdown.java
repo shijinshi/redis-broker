@@ -3,10 +3,7 @@ package cn.shijinshi.redis.common;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class Shutdown extends Thread {
 
     private final static Set<Thread> waitingThreads = new HashSet<>();
-    private final static Set<Runnable> waitingRunnables = new HashSet<>();
+    private final static Set<OrderRunner> waitingRunners = new TreeSet<>();
 
     private List<Delayed> delayedList;
 
@@ -39,7 +36,7 @@ public class Shutdown extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        for (;;)  {
             Thread thread = null;
             synchronized (waitingThreads) {
                 Iterator<Thread> iterator = waitingThreads.iterator();
@@ -58,12 +55,12 @@ public class Shutdown extends Thread {
             }
         }
 
-        while (true) {
+        for (;;)  {
             Runnable r = null;
-            synchronized (waitingRunnables) {
-                Iterator<Runnable> iterator = waitingRunnables.iterator();
+            synchronized (waitingRunners) {
+                Iterator<OrderRunner> iterator = waitingRunners.iterator();
                 if (iterator.hasNext()) {
-                    r = iterator.next();
+                    r = iterator.next().runner;
                     iterator.remove();
                 }
             }
@@ -86,12 +83,27 @@ public class Shutdown extends Thread {
         }
     }
 
-    public static void addRunnable(Runnable runnable) {
-        if (runnable == null) {
-            return;
-        }
-        synchronized (waitingRunnables) {
-            waitingRunnables.add(runnable);
+    public static void addRunner(Runnable runner, int order) {
+        Objects.requireNonNull(runner);
+        synchronized (waitingRunners) {
+            waitingRunners.add(new OrderRunner(runner, order));
         }
     }
+
+    static class OrderRunner implements Comparable<OrderRunner> {
+
+        final Runnable runner;
+        final int order;
+
+        OrderRunner(Runnable runner, int order) {
+            this.runner = runner;
+            this.order = order;
+        }
+
+        @Override
+        public int compareTo(OrderRunner o) {
+            return order - o.order;
+        }
+    }
+
 }
