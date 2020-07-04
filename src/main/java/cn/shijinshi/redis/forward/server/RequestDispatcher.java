@@ -35,7 +35,7 @@ public class RequestDispatcher extends ChannelInboundHandlerAdapter {
     }
 
     private Transfer createTransfer() {
-        return new SingleQueuedTransfer(this::handleTuple);
+        return new MultiQueuedTransfer(this::handleTuple);
     }
 
     public Map<ChannelId, Channel> getChannels() {

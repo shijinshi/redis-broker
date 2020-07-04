@@ -7,10 +7,9 @@ import java.util.concurrent.CompletableFuture;
 /**
  * @author Gui Jiahai
  */
-public class Tuple {
+public final class Tuple {
 
     private final ChannelHandlerContext context;
-
     private final CompletableFuture<byte[]> future;
 
     public static Tuple create(ChannelHandlerContext context, CompletableFuture<byte[]> future) {
@@ -22,11 +21,11 @@ public class Tuple {
         this.future = future;
     }
 
-    public ChannelHandlerContext getContext() {
+    public final ChannelHandlerContext getContext() {
         return context;
     }
 
-    public CompletableFuture<byte[]> getFuture() {
+    public final CompletableFuture<byte[]> getFuture() {
         return future;
     }
 

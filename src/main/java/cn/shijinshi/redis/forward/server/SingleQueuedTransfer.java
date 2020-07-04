@@ -6,15 +6,25 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.*;
 import java.util.function.Consumer;
 
 /**
+ * 采用单个队列来维护tuple。
+ *
+ * 另外，创建一个线程，此线程不断地从队列中消费tuple，
+ * 待tuple.future处于完成状态后，将调用Transfer.apply方法，
+ * 处理tuple，然后，继续消费队列中的tuple。
+ *
+ * 起初，此类的队列采用了BlockingQueue，但是，在入队的时候，
+ * 由于竞争，会产生线程的上下文切换，从而效率低。
+ *
+ * 最后，使用了ConcurrentLinkedQueue - 非阻塞线程安全的队列。
+ * 好处是，在入队时，不会使线程堵塞。
+ *
  * @author Gui Jiahai
  */
+@Deprecated
 public class SingleQueuedTransfer extends Transfer {
 
     private static final Logger logger = LoggerFactory.getLogger(SingleQueuedTransfer.class);
@@ -25,10 +35,9 @@ public class SingleQueuedTransfer extends Transfer {
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition condition = lock.newCondition();
 
-    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
     private final Lock r = rwLock.readLock();
     private final Lock w = rwLock.writeLock();
-    private volatile boolean closed = false;
 
     public SingleQueuedTransfer(Consumer<Tuple> callback) {
         super(callback);
@@ -43,18 +52,22 @@ public class SingleQueuedTransfer extends Transfer {
     @Override
     public void queue(Tuple tuple) {
         int size = queue.size();
+
+        /*
+        加写锁，判断closed状态，
+         */
         r.lock();
         try {
-            if (closed) {
-                //todo 不应该出现在这里。如果出现在这里，应该是个bug
-                logger.error("Queue is closed. No more tuple should be queued. This must be a bug.");
-                throw new IllegalStateException("Queue closed");
-            }
+            checkClosed(logger);
             queue.offer(tuple);
         } finally {
             r.unlock();
         }
 
+        /*
+        如果size == 0，则Thread有可能处于wait状态，
+        这时候，应该发出信号。
+         */
         if (size == 0) {
             signalNotEmpty();
         }
@@ -70,9 +83,9 @@ public class SingleQueuedTransfer extends Transfer {
     }
 
     private void handleResult() {
-        lock.lock();
-        try {
-            for (;;) {
+        for (;;) {
+            lock.lock();
+            try {
                 while (queue.isEmpty()) {
                     try {
                         condition.await();
@@ -80,22 +93,22 @@ public class SingleQueuedTransfer extends Transfer {
                         logger.error("There should be NO InterruptedException while you take a tuple from queue. It must be a bug.", e);
                     }
                 }
-
-                Tuple tuple = queue.poll();
-                if (tuple == null) {
-                    continue;
-                }
-
-                if (tuple != end) {
-                    apply(tuple);
-                } else {
-                    apply(null);
-                    break;
-                }
+            }finally {
+                lock.unlock();
             }
 
-        } finally {
-            lock.unlock();
+
+            Tuple tuple = queue.poll();
+            if (tuple == null) {
+                continue;
+            }
+
+            if (tuple != end) {
+                apply(tuple);
+            } else {
+                apply(null);
+                break;
+            }
         }
 
         logger.info("All request tuples was consumed");
